@@ -62,6 +62,7 @@ install -o root -g vault -m 640 /dev/null /opt/vault/etc/vault.hcl
 cat >/opt/vault/etc/vault.hcl <<EOF
 cluster_name = "example"
 disable_mlock = true
+ui = true
 
 storage "file" {
     path = "/opt/vault/data"
@@ -110,6 +111,7 @@ install -o root -g root -m 600 /dev/null .vault-token
 vault init >vault-init-result.txt
 awk '/Unseal Key [0-9]+: /{print $4}' vault-init-result.txt | head -3 >/opt/vault/etc/vault-unseal-keys.txt
 awk '/Initial Root Token: /{print $4}' vault-init-result.txt >.vault-token
+cp .vault-token /vagrant/shared/vault-root-token.txt
 popd
 cat >/opt/vault/bin/vault-unseal <<EOF
 #!/bin/bash

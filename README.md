@@ -4,6 +4,14 @@ Run `vagrant up --provider=libvirt` to launch with libvirt (qemu-kvm).
 
 Run `vagrant up --provider=virtualbox` to launch with VirtualBox.
 
+Add the following entry to your `hosts` file:
+
+```
+10.0.0.20 vault.example.com
+```
+
+Browse to the [UI](https://vault.example.com:8200/ui) and login with the vault root token (get it from the `shared/vault-root-token.txt` file).
+
 # TLS
 
 Verify that a secure connection with vault can be established:
