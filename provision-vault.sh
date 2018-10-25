@@ -134,6 +134,10 @@ vault auth list
 # list the active secret backends.
 vault secrets list
 
+# show the default policy.
+# see https://www.vaultproject.io/docs/concepts/policies.html
+vault read sys/policy/default
+
 # write an example secret, read it back and delete it.
 # see https://www.vaultproject.io/docs/commands/read-write.html
 echo -n abracadabra | vault write secret/example password=- other_key=value
