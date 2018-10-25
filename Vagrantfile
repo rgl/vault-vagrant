@@ -24,4 +24,5 @@ Vagrant.configure(2) do |config|
   config.vm.provision 'shell', path: 'provision-certification-authority.sh'
   config.vm.provision 'shell', path: 'provision-certificate.sh', args: config.vm.hostname
   config.vm.provision 'shell', path: 'provision-vault.sh'
+  config.vm.provision 'shell', path: 'examples/python/list-auth-backends/run.sh'
 end
