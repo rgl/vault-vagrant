@@ -12,6 +12,8 @@ Add the following entry to your `hosts` file:
 
 Browse to the [UI](https://vault.example.com:8200/ui) and login with the vault root token (get it from the `shared/vault-root-token.txt` file).
 
+Browse to the [Goldfish Vault UI](https://vault.example.com:8000), initialize it, and then login with the vault root token.
+
 # TLS
 
 Verify that a secure connection with vault can be established:

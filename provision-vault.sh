@@ -130,6 +130,10 @@ sleep 3
 journalctl -u vault
 vault status
 
+# enable the approle authentication method.
+# NB this is needed by goldfish and our examples.
+vault auth enable approle
+
 # list the active authentication methods.
 vault auth list
 
