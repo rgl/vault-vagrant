@@ -148,6 +148,7 @@ http $VAULT_ADDR/v1/sys/auth "X-Vault-Token: $(cat ~/.vault-token)" \
 # write an example secret, read it back and delete it.
 # see https://www.vaultproject.io/docs/commands/read-write.html
 echo -n abracadabra | vault write secret/example password=- other_key=value
+vault read -format=json secret/example      # read all the fields as json.
 vault read secret/example                   # read all the fields.
 vault read -field=password secret/example   # read just the password field.
 vault delete secret/example
