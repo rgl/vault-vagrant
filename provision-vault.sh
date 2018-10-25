@@ -152,3 +152,6 @@ vault read secret/example                   # read all the fields.
 vault read -field=password secret/example   # read just the password field.
 vault delete secret/example
 vault read secret/example || true
+
+# install command line autocomplete.
+vault -autocomplete-install
