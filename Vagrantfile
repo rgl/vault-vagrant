@@ -1,14 +1,15 @@
 Vagrant.configure(2) do |config|
-  config.vm.box = 'ubuntu-16.04-amd64'
+  config.vm.box = 'ubuntu-18.04-amd64'
 
   config.vm.hostname = 'vault.example.com'
 
-  config.vm.provider "libvirt" do |lv|
+  config.vm.provider 'libvirt' do |lv, config|
     lv.memory = 2048
     lv.cpus = 2
-    lv.cpu_mode = "host-passthrough"
-    lv.nested = true
-    lv.keymap = "pt"
+    lv.cpu_mode = 'host-passthrough'
+    lv.nested = false
+    lv.keymap = 'pt'
+    config.vm.synced_folder '.', '/vagrant', type: 'nfs'
   end
 
   config.vm.provider 'virtualbox' do |vb|
@@ -16,6 +17,8 @@ Vagrant.configure(2) do |config|
     vb.memory = 2048
     vb.cpus = 2
   end
+
+  config.vm.network 'private_network', ip: '10.0.0.20', libvirt__forward_mode: 'route', libvirt__dhcp_enabled: false
 
   config.vm.provision 'shell', path: 'provision.sh'
   config.vm.provision 'shell', path: 'provision-certification-authority.sh'
