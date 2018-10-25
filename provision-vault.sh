@@ -131,6 +131,9 @@ vault status
 # list the active authentication methods.
 vault auth list
 
+# list the active secret backends.
+vault secrets list
+
 # write an example secret, read it back and delete it.
 # see https://www.vaultproject.io/docs/commands/read-write.html
 echo -n abracadabra | vault write secret/example password=- other_key=value
