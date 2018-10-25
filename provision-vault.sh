@@ -14,10 +14,10 @@ adduser \
 install -d -o root -g vault -m 755 /opt/vault
 
 # install vault.
-vault_version=0.7.3
+vault_version=0.11.4
 vault_artifact=vault_${vault_version}_linux_amd64.zip
 vault_artifact_url=https://releases.hashicorp.com/vault/$vault_version/$vault_artifact
-vault_artifact_sha=2822164d5dd347debae8b3370f73f9564a037fc18e9adcabca5907201e5aab45
+vault_artifact_sha=3e44826ffcf3756a72d6802d96ea244e605dad362ece27d5c8f8839fb69a7079
 vault_artifact_zip=/tmp/$vault_artifact
 wget -q $vault_artifact_url -O$vault_artifact_zip
 if [ "$(sha256sum $vault_artifact_zip | awk '{print $1}')" != "$vault_artifact_sha" ]; then
@@ -111,7 +111,7 @@ set -eu
 sleep 3 # to give vault some time to initialize before we hit its api.
 KEYS=\$(cat /opt/vault/etc/vault-unseal-keys.txt)
 for key in \$KEYS; do
-    /opt/vault/bin/vault unseal -address=$VAULT_ADDR \$key
+    /opt/vault/bin/vault operator unseal -address=$VAULT_ADDR \$key
 done
 EOF
 /opt/vault/bin/vault-unseal
