@@ -138,6 +138,13 @@ vault secrets list
 # see https://www.vaultproject.io/docs/concepts/policies.html
 vault read sys/policy/default
 
+# list the active authentication backends.
+# see https://www.vaultproject.io/intro/getting-started/authentication.html
+# see https://github.com/hashicorp/vault/issues/3456
+vault path-help sys/auth
+http $VAULT_ADDR/v1/sys/auth "X-Vault-Token: $(cat ~/.vault-token)" \
+    | jq -r 'keys[] | select(endswith("/"))'
+
 # write an example secret, read it back and delete it.
 # see https://www.vaultproject.io/docs/commands/read-write.html
 echo -n abracadabra | vault write secret/example password=- other_key=value

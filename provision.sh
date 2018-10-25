@@ -10,7 +10,9 @@ export DEBIAN_FRONTEND=noninteractive
 apt-get update
 apt-get install -y git-core
 apt-get install -y unzip
+apt-get install -y --no-install-recommends httpie
 apt-get install -y --no-install-recommends vim
+apt-get install -y --no-install-recommends jq
 
 # set system configuration.
 rm -f /{root,home/*}/.{profile,bashrc}
