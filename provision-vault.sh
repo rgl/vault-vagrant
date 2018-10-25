@@ -128,6 +128,9 @@ sleep 3
 journalctl -u vault
 vault status
 
+# list the active authentication methods.
+vault auth list
+
 # write an example secret, read it back and delete it.
 # see https://www.vaultproject.io/docs/commands/read-write.html
 echo -n abracadabra | vault write secret/example password=- other_key=value
