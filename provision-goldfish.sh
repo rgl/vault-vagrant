@@ -104,3 +104,12 @@ EOF
 systemctl start goldfish
 sleep 3
 journalctl -u goldfish
+
+# bootstrap goldfish.
+bootstrap_wrapping_token="$(vault write -f -wrap-ttl=1m -field=wrapping_token auth/approle/role/goldfish/secret-id)"
+bootstrap_result_json="$(http --ignore-stdin POST https://$domain:8000/v1/bootstrap "wrapping_token=$bootstrap_wrapping_token")"
+bootstrap_result="$(echo "$bootstrap_result_json" | jq -r .result)"
+if [ "$bootstrap_result" != "success" ]; then
+    echo "ERROR: failed to bootstrap goldfish with error: $(echo "$bootstrap_result_json" | jq -r .error)"
+    exit 1
+fi
