@@ -133,6 +133,12 @@ sleep 3
 journalctl -u vault
 vault status
 
+# enable auditing to stdout (use journalctl -u vault to see it).
+# see https://www.vaultproject.io/docs/commands/audit/enable.html
+# see https://www.vaultproject.io/docs/audit/file.html
+vault audit enable file file_path=stdout log_raw=true
+vault audit list
+
 # enable the approle authentication method.
 # NB this is needed by goldfish and our examples.
 vault auth enable approle
