@@ -33,3 +33,9 @@ verify return:1
 ...
 Verification: OK
 ```
+
+
+# Reference
+
+* [Why We Need Dynamic Secrets (MAR 01 2018)](https://www.hashicorp.com/blog/why-we-need-dynamic-secrets)
+* [Authenticating Applications with HashiCorp Vault AppRole (MAR 13 2018)](https://www.hashicorp.com/blog/authenticating-applications-with-vault-approle)
