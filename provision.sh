@@ -17,6 +17,9 @@ apt-get install -y --no-install-recommends jq
 # set system configuration.
 rm -f /{root,home/*}/.{profile,bashrc}
 cp -v -r /vagrant/config/etc/* /etc
+cat >>/etc/hosts <<EOF
+127.0.0.1 postgresql.example.com
+EOF
 
 su vagrant -c bash <<'VAGRANT_EOF'
 #!/bin/bash

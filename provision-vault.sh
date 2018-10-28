@@ -143,8 +143,73 @@ vault audit list
 # NB this is needed by goldfish and our examples.
 vault auth enable approle
 
-# list the active authentication methods.
+# enable the userpass authentication method.
+# NB this is needed by our examples.
+vault auth enable userpass
+
+# list enabled authentication methods.
 vault auth list
+
+# enable the PostgreSQL database secrets engine.
+# NB this is needed by our examples.
+vault secrets enable database
+
+# configure the greetings PostgreSQL database.
+# see https://learn.hashicorp.com/vault/secrets-management/sm-dynamic-secrets#postgresql
+# see https://learn.hashicorp.com/vault/secrets-management/db-root-rotation
+# see https://www.postgresql.org/docs/10/static/libpq-connect.html#LIBPQ-CONNSTRING
+# see https://www.postgresql.org/docs/10/static/sql-createrole.html
+# see https://www.postgresql.org/docs/10/static/sql-grant.html
+# see https://www.vaultproject.io/docs/secrets/databases/postgresql.html
+# see https://www.vaultproject.io/api/secret/databases/postgresql.html
+vault write database/config/greetings \
+    plugin_name=postgresql-database-plugin \
+    allowed_roles=greetings-admin,greetings-reader \
+    connection_url='postgresql://{{username}}:{{password}}@postgresql.example.com:5432/greetings?sslmode=verify-full' \
+    username=vault \
+    password=abracadabra
+#vault write -force database/rotate-root/greetings # immediatly rotate the root password (in this case, the vault username password).
+vault read -format=json database/config/greetings | jq .data
+# NB db_name must match the database/config/:db_name
+vault write database/roles/greetings-admin \
+    db_name=greetings \
+    creation_statements="
+create role \"{{name}}\" with login password '{{password}}' valid until '{{expiration}}';
+grant all privileges on all tables in schema public to \"{{name}}\";
+" \
+    default_ttl=1h \
+    max_ttl=24h
+vault read -format=json database/roles/greetings-admin | jq .data
+# NB db_name must match the database/config/:db_name
+vault write database/roles/greetings-reader \
+    db_name=greetings \
+    creation_statements="
+create role \"{{name}}\" with login password '{{password}}' valid until '{{expiration}}';
+grant select on all tables in schema public to \"{{name}}\";
+" \
+    default_ttl=1h \
+    max_ttl=24h
+vault read -format=json database/roles/greetings-reader | jq .data
+echo 'You can create a user to administer the greetings database with: vault read database/creds/greetings-admin'
+echo 'You can create a user to access the greetings database with: vault read database/creds/greetings-reader'
+
+# create the policy for our use-postgresql example.
+vault policy write use-postgresql - <<EOF
+path "database/creds/greetings-admin" {
+    capabilities = ["read"]
+}
+path "database/creds/greetings-reader" {
+    capabilities = ["read"]
+}
+EOF
+
+# create the user for our use-postgresql example.
+vault write auth/userpass/users/use-postgresql \
+    password=abracadabra \
+    policies=use-postgresql
+
+# list database connections/names.
+vault list -format=json database/config
 
 # list the active secret backends.
 vault secrets list
