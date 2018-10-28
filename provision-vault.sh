@@ -64,6 +64,9 @@ cluster_name = "example"
 disable_mlock = true
 ui = true
 
+# one of: trace, debug, info, warning, error.
+log_level = "trace"
+
 storage "file" {
     path = "/opt/vault/data"
 }
