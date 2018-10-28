@@ -92,7 +92,7 @@ sleep 3
 journalctl -u vault
 
 # init vault.
-# NB vault-init-result.txt will have something like:
+# NB vault-operator-init-result.txt will have something like:
 #       Unseal Key 1: sXiqMfCPiRNGvo+tEoHVGy+FHFW092H7vfOY0wPrzpYh
 #       Unseal Key 2: dCm5+NhacPcX6GwI0IMMK+CM0xL6wif5/k0LJ0XTPHhy
 #       Unseal Key 3: YjbM3TANam0dO9FTa0y/2wj7nxnlDyct7oVMksHs7trE
@@ -108,12 +108,12 @@ journalctl -u vault
 #       Vault does not store the master key. Without at least 3 keys,
 #       your vault will remain permanently sealed.
 pushd ~
-install -o root -g root -m 600 /dev/null vault-init-result.txt
+install -o root -g root -m 600 /dev/null vault-operator-init-result.txt
 install -o root -g root -m 600 /dev/null /opt/vault/etc/vault-unseal-keys.txt
 install -o root -g root -m 600 /dev/null .vault-token
-vault init >vault-init-result.txt
-awk '/Unseal Key [0-9]+: /{print $4}' vault-init-result.txt | head -3 >/opt/vault/etc/vault-unseal-keys.txt
-awk '/Initial Root Token: /{print $4}' vault-init-result.txt >.vault-token
+vault operator init >vault-operator-init-result.txt
+awk '/Unseal Key [0-9]+: /{print $4}' vault-operator-init-result.txt | head -3 >/opt/vault/etc/vault-unseal-keys.txt
+awk '/Initial Root Token: /{print $4}' vault-operator-init-result.txt >.vault-token
 cp .vault-token /vagrant/shared/vault-root-token.txt
 popd
 cat >/opt/vault/bin/vault-unseal <<EOF
