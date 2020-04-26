@@ -14,10 +14,10 @@ adduser \
 install -d -o root -g vault -m 755 /opt/vault
 
 # install vault.
-vault_version=0.11.4
+vault_version=1.4.0
 vault_artifact=vault_${vault_version}_linux_amd64.zip
 vault_artifact_url=https://releases.hashicorp.com/vault/$vault_version/$vault_artifact
-vault_artifact_sha=3e44826ffcf3756a72d6802d96ea244e605dad362ece27d5c8f8839fb69a7079
+vault_artifact_sha=8f739c4850bab35e971e27c8120908f48f247b07717d19aabad1110e9966cded
 vault_artifact_zip=/tmp/$vault_artifact
 wget -q $vault_artifact_url -O$vault_artifact_zip
 if [ "$(sha256sum $vault_artifact_zip | awk '{print $1}')" != "$vault_artifact_sha" ]; then
@@ -30,7 +30,7 @@ ln -s /opt/vault/bin/vault /usr/local/bin
 vault -v
 
 # run as a service.
-# see https://www.vaultproject.io/guides/production.html
+# see https://learn.hashicorp.com/vault/operations/production-hardening
 # see https://www.vaultproject.io/docs/internals/security.html
 cat >/etc/systemd/system/vault.service <<'EOF'
 [Unit]
@@ -73,10 +73,14 @@ storage "file" {
 
 listener "tcp" {
     address = "0.0.0.0:8200"
+    cluster_address = "0.0.0.0:8201"
     tls_disable = false
     tls_cert_file = "/opt/vault/etc/$domain-crt.pem"
     tls_key_file = "/opt/vault/etc/$domain-key.pem"
 }
+
+api_addr = "https://$domain:8200"
+cluster_addr = "https://$domain:8201"
 EOF
 install -o root -g root -m 700 /dev/null /opt/vault/bin/vault-unseal
 echo '#!/bin/bash' >/opt/vault/bin/vault-unseal
@@ -113,7 +117,7 @@ install -o root -g root -m 600 /dev/null /opt/vault/etc/vault-unseal-keys.txt
 install -o root -g root -m 600 /dev/null .vault-token
 vault operator init >vault-operator-init-result.txt
 awk '/Unseal Key [0-9]+: /{print $4}' vault-operator-init-result.txt | head -3 >/opt/vault/etc/vault-unseal-keys.txt
-awk '/Initial Root Token: /{print $4}' vault-operator-init-result.txt >.vault-token
+awk '/Initial Root Token: /{print $4}' vault-operator-init-result.txt | tr -d '\n' >.vault-token
 cp .vault-token /vagrant/shared/vault-root-token.txt
 popd
 cat >/opt/vault/bin/vault-unseal <<EOF
@@ -221,14 +225,17 @@ vault path-help sys/auth
 http $VAULT_ADDR/v1/sys/auth "X-Vault-Token: $(cat ~/.vault-token)" \
     | jq -r 'keys[] | select(endswith("/"))'
 
+# enable the kv 2 secrets engine.
+vault secrets enable -version=2 -path=secret kv
+
 # write an example secret, read it back and delete it.
 # see https://www.vaultproject.io/docs/commands/read-write.html
-echo -n abracadabra | vault write secret/example password=- other_key=value
-vault read -format=json secret/example      # read all the fields as json.
-vault read secret/example                   # read all the fields.
-vault read -field=password secret/example   # read just the password field.
-vault delete secret/example
-vault read secret/example || true
+echo -n abracadabra | vault kv put secret/example password=- other_key=value
+vault kv get -format=json secret/example    # read all the fields as json.
+vault kv get secret/example                 # read all the fields.
+vault kv get -field=password secret/example # read just the password field.
+vault kv metadata delete secret/example     # delete the secret and all its versions.    
+vault kv get secret/example || true
 
 # install command line autocomplete.
 vault -autocomplete-install
