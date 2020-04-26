@@ -77,10 +77,22 @@ listener "tcp" {
     tls_disable = false
     tls_cert_file = "/opt/vault/etc/$domain-crt.pem"
     tls_key_file = "/opt/vault/etc/$domain-key.pem"
+    telemetry {
+        unauthenticated_metrics_access = true
+    }
 }
 
 api_addr = "https://$domain:8200"
 cluster_addr = "https://$domain:8201"
+
+# enable the telemetry endpoint.
+# access it at https://$domain:8200/v1/sys/metrics?format=prometheus
+# see https://www.vaultproject.io/docs/configuration/telemetry
+# see https://www.vaultproject.io/docs/configuration/listener/tcp#telemetry-parameters
+telemetry {
+   disable_hostname = true
+   prometheus_retention_time = "24h"
+}
 EOF
 install -o root -g root -m 700 /dev/null /opt/vault/bin/vault-unseal
 echo '#!/bin/bash' >/opt/vault/bin/vault-unseal

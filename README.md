@@ -12,6 +12,8 @@ Add the following entry to your `hosts` file:
 
 Browse to the [UI](https://vault.example.com:8200/ui) and login with the vault root token (get it from the `shared/vault-root-token.txt` file).
 
+Test the [prometheus telemetry endpoint](https://vault.example.com:8200/v1/sys/metrics?format=prometheus).
+
 # TLS
 
 Verify that a secure connection with vault can be established:
