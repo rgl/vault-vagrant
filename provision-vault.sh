@@ -145,9 +145,9 @@ vault secrets enable database
 # configure the greetings PostgreSQL database.
 # see https://learn.hashicorp.com/vault/secrets-management/sm-dynamic-secrets#postgresql
 # see https://learn.hashicorp.com/vault/secrets-management/db-root-rotation
-# see https://www.postgresql.org/docs/10/static/libpq-connect.html#LIBPQ-CONNSTRING
-# see https://www.postgresql.org/docs/10/static/sql-createrole.html
-# see https://www.postgresql.org/docs/10/static/sql-grant.html
+# see https://www.postgresql.org/docs/12/libpq-connect.html#LIBPQ-CONNSTRING
+# see https://www.postgresql.org/docs/12/sql-createrole.html
+# see https://www.postgresql.org/docs/12/sql-grant.html
 # see https://www.vaultproject.io/docs/secrets/databases/postgresql.html
 # see https://www.vaultproject.io/api/secret/databases/postgresql.html
 vault write database/config/greetings \

@@ -19,7 +19,7 @@ print('pg_greetings_reader_username: %r' % pg_greetings_reader_username)
 print('pg_greetings_reader_password: %r' % pg_greetings_reader_password)
 
 def escape_data_source_name_string(value):
-    # see https://www.postgresql.org/docs/10/static/libpq-connect.html#LIBPQ-CONNSTRING
+    # see https://www.postgresql.org/docs/12/libpq-connect.html#LIBPQ-CONNSTRING
     return '\'%s\'' % value.replace('\\', '\\\\').replace('\'', '\\\'')
 
 data_source_name = ' '.join([
@@ -33,7 +33,7 @@ data_source_name = ' '.join([
 ])
 
 # see http://initd.org/psycopg/docs/
-# see https://www.postgresql.org/docs/10/static/libpq-connect.html#LIBPQ-CONNECT-SSLMODE
+# see https://www.postgresql.org/docs/12/libpq-connect.html#LIBPQ-CONNECT-SSLMODE
 # NB psycopg2 uses the %APPDATA%\postgresql\root.crt file to validate the server certificate.
 def sql_execute_scalar(data_source_name, sql):
     with psycopg2.connect(data_source_name) as connection:

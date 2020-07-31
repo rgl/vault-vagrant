@@ -5,21 +5,21 @@ set -eux
 apt-get install -y --no-install-recommends postgresql
 
 # setup tls.
-install -o postgres -g postgres -m 444 /vagrant/shared/example-ca/postgresql.example.com-crt.pem /etc/postgresql/10/main
-install -o postgres -g postgres -m 400 /vagrant/shared/example-ca/postgresql.example.com-key.pem /etc/postgresql/10/main
-sed -i -E 's,^#?(ssl\s*=).+,\1 on,g' /etc/postgresql/10/main/postgresql.conf
-sed -i -E 's,^#?(ssl_ciphers\s*=).+,\1 '"'HIGH:!aNULL'"',g' /etc/postgresql/10/main/postgresql.conf
-sed -i -E 's,^#?(ssl_cert_file\s*=).+,\1 '"'/etc/postgresql/10/main/postgresql.example.com-crt.pem'"',g' /etc/postgresql/10/main/postgresql.conf
-sed -i -E 's,^#?(ssl_key_file\s*=).+,\1 '"'/etc/postgresql/10/main/postgresql.example.com-key.pem'"',g' /etc/postgresql/10/main/postgresql.conf
+install -o postgres -g postgres -m 444 /vagrant/shared/example-ca/postgresql.example.com-crt.pem /etc/postgresql/12/main
+install -o postgres -g postgres -m 400 /vagrant/shared/example-ca/postgresql.example.com-key.pem /etc/postgresql/12/main
+sed -i -E 's,^#?(ssl\s*=).+,\1 on,g' /etc/postgresql/12/main/postgresql.conf
+sed -i -E 's,^#?(ssl_ciphers\s*=).+,\1 '"'HIGH:!aNULL'"',g' /etc/postgresql/12/main/postgresql.conf
+sed -i -E 's,^#?(ssl_cert_file\s*=).+,\1 '"'/etc/postgresql/12/main/postgresql.example.com-crt.pem'"',g' /etc/postgresql/12/main/postgresql.conf
+sed -i -E 's,^#?(ssl_key_file\s*=).+,\1 '"'/etc/postgresql/12/main/postgresql.example.com-key.pem'"',g' /etc/postgresql/12/main/postgresql.conf
 
 # enable detailed logging.
-# see https://www.postgresql.org/docs/10/static/runtime-config-logging.html
-sed -i -E 's,^#?(logging_collector\s*=).+,\1 on,g' /etc/postgresql/10/main/postgresql.conf # default is off. # XXX postgres on ubuntu is writting to log files?
-sed -i -E 's,^#?(log_min_messages\s*=).+,\1 info,g' /etc/postgresql/10/main/postgresql.conf # default is warning.
-sed -i -E 's,^#?(log_statement\s*=).+,\1 '"'all'"',g' /etc/postgresql/10/main/postgresql.conf # default is 'none'.
-sed -i -E 's,^#?(log_connections\s*=).+,\1 on,g' /etc/postgresql/10/main/postgresql.conf # default is 'off'.
-sed -i -E 's,^#?(log_disconnections\s*=).+,\1 on,g' /etc/postgresql/10/main/postgresql.conf # default is 'off'.
-echo 'You can see the postgresql logs with: tail -f /var/lib/postgresql/10/main/log/*.log'
+# see https://www.postgresql.org/docs/12/runtime-config-logging.html
+sed -i -E 's,^#?(logging_collector\s*=).+,\1 on,g' /etc/postgresql/12/main/postgresql.conf # default is off. # XXX postgres on ubuntu is writting to log files?
+sed -i -E 's,^#?(log_min_messages\s*=).+,\1 info,g' /etc/postgresql/12/main/postgresql.conf # default is warning.
+sed -i -E 's,^#?(log_statement\s*=).+,\1 '"'all'"',g' /etc/postgresql/12/main/postgresql.conf # default is 'none'.
+sed -i -E 's,^#?(log_connections\s*=).+,\1 on,g' /etc/postgresql/12/main/postgresql.conf # default is 'off'.
+sed -i -E 's,^#?(log_disconnections\s*=).+,\1 on,g' /etc/postgresql/12/main/postgresql.conf # default is 'off'.
+echo 'You can see the postgresql logs with: tail -f /var/lib/postgresql/12/main/log/*.log'
 
 # restart postgres.
 systemctl restart postgresql
