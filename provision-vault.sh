@@ -1,65 +1,38 @@
 #!/bin/bash
-set -eux
+set -euxo pipefail
 
-# add the vault user.
-groupadd --system vault
-adduser \
-    --system \
-    --disabled-login \
-    --no-create-home \
-    --gecos '' \
-    --ingroup vault \
-    --home /opt/vault \
-    vault
-install -d -o root -g vault -m 755 /opt/vault
 
 # install vault.
-vault_version=1.4.0
-vault_artifact=vault_${vault_version}_linux_amd64.zip
-vault_artifact_url=https://releases.hashicorp.com/vault/$vault_version/$vault_artifact
-vault_artifact_sha=8f739c4850bab35e971e27c8120908f48f247b07717d19aabad1110e9966cded
-vault_artifact_zip=/tmp/$vault_artifact
-wget -q $vault_artifact_url -O$vault_artifact_zip
-if [ "$(sha256sum $vault_artifact_zip | awk '{print $1}')" != "$vault_artifact_sha" ]; then
-    echo "downloaded $vault_artifact_url failed the checksum verification"
-    exit 1
-fi
-install -d /opt/vault/bin
-unzip $vault_artifact_zip -d /opt/vault/bin
-ln -s /opt/vault/bin/vault /usr/local/bin
-vault -v
-
-# run as a service.
 # see https://learn.hashicorp.com/vault/operations/production-hardening
 # see https://www.vaultproject.io/docs/internals/security.html
-cat >/etc/systemd/system/vault.service <<'EOF'
-[Unit]
-Description=Vault
-After=network.target
+# NB execute `apt-cache madison vault` to known the available versions.
+vault_version=1.5.0-2
+apt-get install -y software-properties-common apt-transport-https gnupg
+wget -qO- https://apt.releases.hashicorp.com/gpg | apt-key add -
+apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+apt-get install -y "vault=${vault_version}"
+vault -v
 
+# configure the service to auto-unseal vault.
+install -d /etc/systemd/system/vault.service.d
+cat >/etc/systemd/system/vault.service.d/override.conf <<'EOF'
 [Service]
-Type=simple
-User=vault
-Group=vault
-PermissionsStartOnly=true
-ExecStart=/opt/vault/bin/vault server -config=/opt/vault/etc/vault.hcl
-ExecStartPost=/opt/vault/bin/vault-unseal
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
+ExecStartPost=
+ExecStartPost=+/opt/vault/auto-unseal/unseal
 EOF
+systemctl daemon-reload
 
 # configure.
 domain=$(hostname --fqdn)
 export VAULT_ADDR="https://$domain:8200"
 echo export VAULT_ADDR="https://$domain:8200" >>~/.bash_login
+install -o vault -g vault -m 770 -d /etc/vault.d
+install -o root -g vault -m 710 -d /opt/vault
 install -o vault -g vault -m 700 -d /opt/vault/data
-install -o root -g vault -m 750 -d /opt/vault/etc
-install -o root -g vault -m 440 /vagrant/shared/example-ca/$domain-crt.pem /opt/vault/etc
-install -o root -g vault -m 440 /vagrant/shared/example-ca/$domain-key.pem /opt/vault/etc
-install -o root -g vault -m 640 /dev/null /opt/vault/etc/vault.hcl
-cat >/opt/vault/etc/vault.hcl <<EOF
+install -o root -g vault -m 750 -d /opt/vault/tls
+install -o root -g vault -m 440 /vagrant/shared/example-ca/$domain-crt.pem /opt/vault/tls
+install -o root -g vault -m 440 /vagrant/shared/example-ca/$domain-key.pem /opt/vault/tls
+cat >/etc/vault.d/vault.hcl <<EOF
 cluster_name = "example"
 disable_mlock = true
 ui = true
@@ -75,8 +48,8 @@ listener "tcp" {
     address = "0.0.0.0:8200"
     cluster_address = "0.0.0.0:8201"
     tls_disable = false
-    tls_cert_file = "/opt/vault/etc/$domain-crt.pem"
-    tls_key_file = "/opt/vault/etc/$domain-key.pem"
+    tls_cert_file = "/opt/vault/tls/$domain-crt.pem"
+    tls_key_file = "/opt/vault/tls/$domain-key.pem"
     telemetry {
         unauthenticated_metrics_access = true
     }
@@ -94,8 +67,11 @@ telemetry {
    prometheus_retention_time = "24h"
 }
 EOF
-install -o root -g root -m 700 /dev/null /opt/vault/bin/vault-unseal
-echo '#!/bin/bash' >/opt/vault/bin/vault-unseal
+chown root:vault /etc/vault.d/vault.hcl
+chmod 440 /etc/vault.d/vault.hcl
+install -o root -g root -m 700 -d /opt/vault/auto-unseal
+install -o root -g root -m 500 /dev/null /opt/vault/auto-unseal/unseal
+echo '#!/bin/bash' >/opt/vault/auto-unseal/unseal
 
 # disable swap.
 swapoff --all
@@ -125,23 +101,23 @@ journalctl -u vault
 #       your vault will remain permanently sealed.
 pushd ~
 install -o root -g root -m 600 /dev/null vault-operator-init-result.txt
-install -o root -g root -m 600 /dev/null /opt/vault/etc/vault-unseal-keys.txt
+install -o root -g root -m 600 /dev/null /opt/vault/auto-unseal/unseal-keys.txt
 install -o root -g root -m 600 /dev/null .vault-token
 vault operator init >vault-operator-init-result.txt
-awk '/Unseal Key [0-9]+: /{print $4}' vault-operator-init-result.txt | head -3 >/opt/vault/etc/vault-unseal-keys.txt
+awk '/Unseal Key [0-9]+: /{print $4}' vault-operator-init-result.txt | head -3 >/opt/vault/auto-unseal/unseal-keys.txt
 awk '/Initial Root Token: /{print $4}' vault-operator-init-result.txt | tr -d '\n' >.vault-token
 cp .vault-token /vagrant/shared/vault-root-token.txt
 popd
-cat >/opt/vault/bin/vault-unseal <<EOF
+cat >/opt/vault/auto-unseal/unseal <<EOF
 #!/bin/bash
 set -eu
 sleep 3 # to give vault some time to initialize before we hit its api.
-KEYS=\$(cat /opt/vault/etc/vault-unseal-keys.txt)
+KEYS=\$(cat /opt/vault/auto-unseal/unseal-keys.txt)
 for key in \$KEYS; do
-    /opt/vault/bin/vault operator unseal -address=$VAULT_ADDR \$key
+    /usr/bin/vault operator unseal -address=$VAULT_ADDR \$key
 done
 EOF
-/opt/vault/bin/vault-unseal
+/opt/vault/auto-unseal/unseal
 
 # restart vault to verify that the automatic unseal is working.
 systemctl restart vault
