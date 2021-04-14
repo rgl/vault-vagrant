@@ -1,2 +1,2 @@
-hvac==0.10.5
+hvac==0.10.9
 psycopg2-binary==2.8.6
