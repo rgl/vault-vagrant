@@ -6,7 +6,7 @@ set -euxo pipefail
 # see https://learn.hashicorp.com/vault/operations/production-hardening
 # see https://www.vaultproject.io/docs/internals/security.html
 # NB execute `apt-cache madison vault` to known the available versions.
-vault_version=1.6.0
+vault_version=1.7.0
 apt-get install -y software-properties-common apt-transport-https gnupg
 wget -qO- https://apt.releases.hashicorp.com/gpg | apt-key add -
 apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
