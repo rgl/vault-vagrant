@@ -125,6 +125,13 @@ sleep 3
 journalctl -u vault
 vault status
 
+# show information about our own token.
+# see https://www.vaultproject.io/api/auth/token#lookup-a-token-self
+vault token lookup
+http $VAULT_ADDR/v1/auth/token/lookup-self \
+    "X-Vault-Token: $(cat ~/.vault-token)" \
+    | jq .data
+
 # enable auditing to stdout (use journalctl -u vault to see it).
 # see https://www.vaultproject.io/docs/commands/audit/enable.html
 # see https://www.vaultproject.io/docs/audit/file.html
@@ -222,7 +229,7 @@ echo -n abracadabra | vault kv put secret/example password=- other_key=value
 vault kv get -format=json secret/example    # read all the fields as json.
 vault kv get secret/example                 # read all the fields.
 vault kv get -field=password secret/example # read just the password field.
-vault kv metadata delete secret/example     # delete the secret and all its versions.    
+vault kv metadata delete secret/example     # delete the secret and all its versions.
 vault kv get secret/example || true
 
 # install command line autocomplete.
