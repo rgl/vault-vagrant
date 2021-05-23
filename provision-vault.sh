@@ -170,6 +170,7 @@ vault write database/roles/greetings-admin \
     db_name=greetings \
     creation_statements="
 create role \"{{name}}\" with login password '{{password}}' valid until '{{expiration}}';
+comment on role \"{{name}}\" is 'vault role greetings-admin';
 grant all privileges on all tables in schema public to \"{{name}}\";
 " \
     default_ttl=1h \
@@ -180,6 +181,7 @@ vault write database/roles/greetings-reader \
     db_name=greetings \
     creation_statements="
 create role \"{{name}}\" with login password '{{password}}' valid until '{{expiration}}';
+comment on role \"{{name}}\" is 'vault role greetings-reader';
 grant select on all tables in schema public to \"{{name}}\";
 " \
     default_ttl=1h \

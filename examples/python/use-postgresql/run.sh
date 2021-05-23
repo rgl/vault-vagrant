@@ -10,4 +10,7 @@ python3 -m pip install -r requirements.txt
 # run.
 python3 main.py
 
+# show the current postgresql users and comments.
+sudo -sHu postgres psql -c '\du+'
+
 popd
