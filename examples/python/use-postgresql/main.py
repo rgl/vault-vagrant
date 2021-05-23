@@ -12,6 +12,11 @@ vault_authentication = client.auth_userpass(vault_username, vault_password)
 print('vault policies for %s: %r' % (vault_username, vault_authentication['auth']['policies']))
 
 # get the postgresql greetings reader secret.
+# NB vault will create a new postgresql user in this call.
+# NB the postgresql user will only be valid until the vault secret lease
+#    expires (in our example policy, an hour). in a persistent application,
+#    you would need to periodically renew the secret lease.
+#    see https://www.vaultproject.io/docs/concepts/lease
 greetings_reader_secret = client.read(vault_pg_greetings_reader_path)
 pg_greetings_reader_username = greetings_reader_secret['data']['username']
 pg_greetings_reader_password = greetings_reader_secret['data']['password']
