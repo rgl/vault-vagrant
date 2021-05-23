@@ -18,7 +18,7 @@ client = hvac.Client(url=vault_addr, token=vault_token)
 
 # see https://www.vaultproject.io/api/system/auth.html
 # see https://github.com/hashicorp/vault/issues/3456
-# see https://hvac.readthedocs.io/en/v0.10.9/usage/system_backend/auth.html#list-auth-methods
+# see https://hvac.readthedocs.io/en/v0.10.14/usage/system_backend/auth.html#list-auth-methods
 backends = client.sys.list_auth_methods()
 
 print('authentication backends:')
