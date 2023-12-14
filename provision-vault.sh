@@ -129,6 +129,9 @@ sleep 3
 journalctl -u vault
 vault status
 
+# show the vault tls certificate.
+openssl s_client -connect $domain:8200 -servername $domain </dev/null 2>/dev/null | openssl x509 -noout -text
+
 # show information about our own token.
 # see https://www.vaultproject.io/api/auth/token#lookup-a-token-self
 vault token lookup
