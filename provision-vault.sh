@@ -231,7 +231,7 @@ vault secrets enable -version=2 -path=secret kv
 
 # write an example secret, read it back and delete it.
 # see https://www.vaultproject.io/docs/commands/read-write.html
-echo -n abracadabra | vault kv put secret/example password=- other_key=value
+echo -n abracadabra | vault kv put secret/example username=alibaba password=-
 vault kv get -format=json secret/example    # read all the fields as json.
 vault kv get secret/example                 # read all the fields.
 vault kv get -field=password secret/example # read just the password field.
