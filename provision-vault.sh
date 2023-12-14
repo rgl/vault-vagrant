@@ -8,9 +8,13 @@ set -euxo pipefail
 # NB execute `apt-cache madison vault` to known the available versions.
 vault_version=1.7.2
 apt-get install -y software-properties-common apt-transport-https gnupg
-wget -qO- https://apt.releases.hashicorp.com/gpg | apt-key add -
-apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
-apt-get install -y "vault=${vault_version}"
+wget -qO- https://apt.releases.hashicorp.com/gpg \
+    | gpg --dearmor >/etc/apt/keyrings/apt.releases.hashicorp.com.gpg
+echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/apt.releases.hashicorp.com.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" \
+    >/etc/apt/sources.list.d/apt.releases.hashicorp.com.list 
+apt-get update
+vault_apt_version="$(apt-cache madison vault | perl -ne "/\s($vault_version-?)\s/ && print \$1")"
+apt-get install -y "vault=${vault_apt_version}"
 vault -v
 
 # configure the service to auto-unseal vault.
@@ -152,9 +156,9 @@ vault secrets enable database
 # configure the greetings PostgreSQL database.
 # see https://learn.hashicorp.com/vault/secrets-management/sm-dynamic-secrets#postgresql
 # see https://learn.hashicorp.com/vault/secrets-management/db-root-rotation
-# see https://www.postgresql.org/docs/12/libpq-connect.html#LIBPQ-CONNSTRING
-# see https://www.postgresql.org/docs/12/sql-createrole.html
-# see https://www.postgresql.org/docs/12/sql-grant.html
+# see https://www.postgresql.org/docs/14/libpq-connect.html#LIBPQ-CONNSTRING
+# see https://www.postgresql.org/docs/14/sql-createrole.html
+# see https://www.postgresql.org/docs/14/sql-grant.html
 # see https://www.vaultproject.io/docs/secrets/databases/postgresql.html
 # see https://www.vaultproject.io/api/secret/databases/postgresql.html
 vault write database/config/greetings \

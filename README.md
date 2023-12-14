@@ -1,6 +1,12 @@
-Install the [Ubuntu Base Box](https://github.com/rgl/ubuntu-vagrant).
+# Usage
 
-Run `vagrant up --provider=libvirt --no-destroy-on-error` to launch with libvirt (qemu-kvm).
+Install the [Ubuntu 22.04 Base Box](https://github.com/rgl/ubuntu-vagrant).
+
+Launch the environment with libvirt (qemu-kvm):
+
+```bash
+vagrant up --provider=libvirt --no-destroy-on-error
+```
 
 Add the following entry to your `hosts` file:
 
@@ -11,6 +17,7 @@ Add the following entry to your `hosts` file:
 Browse to the [UI](https://vault.example.com:8200/ui) and login with the vault root token (get it from the `shared/vault-root-token.txt` file).
 
 Test the [prometheus telemetry endpoint](https://vault.example.com:8200/v1/sys/metrics?format=prometheus).
+
 
 # TLS
 
