@@ -2,8 +2,6 @@ Install the [Ubuntu Base Box](https://github.com/rgl/ubuntu-vagrant).
 
 Run `vagrant up --provider=libvirt --no-destroy-on-error` to launch with libvirt (qemu-kvm).
 
-Run `vagrant up --provider=virtualbox --no-destroy-on-error` to launch with VirtualBox.
-
 Add the following entry to your `hosts` file:
 
 ```

@@ -12,12 +12,6 @@ Vagrant.configure(2) do |config|
     config.vm.synced_folder '.', '/vagrant', type: 'nfs'
   end
 
-  config.vm.provider 'virtualbox' do |vb|
-    vb.linked_clone = true
-    vb.memory = 2048
-    vb.cpus = 2
-  end
-
   config.vm.network 'private_network', ip: '10.0.0.20', libvirt__forward_mode: 'route', libvirt__dhcp_enabled: false
 
   config.vm.provision 'shell', path: 'provision.sh'
