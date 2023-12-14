@@ -6,14 +6,14 @@ set -euxo pipefail
 # see https://learn.hashicorp.com/vault/operations/production-hardening
 # see https://www.vaultproject.io/docs/internals/security.html
 # NB execute `apt-cache madison vault` to known the available versions.
-vault_version=1.7.2
+vault_version='1.15.4'
 apt-get install -y software-properties-common apt-transport-https gnupg
 wget -qO- https://apt.releases.hashicorp.com/gpg \
     | gpg --dearmor >/etc/apt/keyrings/apt.releases.hashicorp.com.gpg
 echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/apt.releases.hashicorp.com.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" \
     >/etc/apt/sources.list.d/apt.releases.hashicorp.com.list 
 apt-get update
-vault_apt_version="$(apt-cache madison vault | perl -ne "/\s($vault_version-?)\s/ && print \$1")"
+vault_apt_version="$(apt-cache madison vault | perl -ne "/\s($vault_version(-.+?)?)\s/ && print \$1")"
 apt-get install -y "vault=${vault_apt_version}"
 vault -v
 
