@@ -18,6 +18,13 @@ Browse to the [UI](https://vault.example.com:8200/ui) and login with the vault r
 
 Test the [prometheus telemetry endpoint](https://vault.example.com:8200/v1/sys/metrics?format=prometheus).
 
+List this repository dependencies (and which have newer versions):
+
+```bash
+export GITHUB_COM_TOKEN='YOUR_GITHUB_PERSONAL_TOKEN'
+./renovate.sh
+```
+
 
 # TLS
 
