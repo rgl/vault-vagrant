@@ -5,7 +5,9 @@ set -euxo pipefail
 # install vault.
 # see https://learn.hashicorp.com/vault/operations/production-hardening
 # see https://www.vaultproject.io/docs/internals/security.html
+# see https://github.com/hashicorp/vault
 # NB execute `apt-cache madison vault` to known the available versions.
+# renovate: datasource=github-releases depName=hashicorp/vault
 vault_version='1.15.4'
 apt-get install -y software-properties-common apt-transport-https gnupg
 wget -qO- https://apt.releases.hashicorp.com/gpg \
