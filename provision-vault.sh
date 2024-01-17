@@ -2,6 +2,33 @@
 set -euxo pipefail
 
 
+# wait for a specific vault state.
+# see https://developer.hashicorp.com/vault/api-docs/system/health
+function wait-for-state {
+    local desired_state="$1"
+    local vault_health_check_url="$VAULT_ADDR/v1/sys/health"
+    while true; do
+        local status_code="$(
+            (wget \
+                -qO- \
+                --server-response \
+                --spider \
+                --tries=1 \
+                "$vault_health_check_url" \
+                2>&1 || true) \
+                | awk '/^  HTTP/{print $2}')"
+        case "$status_code" in
+            "$desired_state")
+                return 0
+                ;;
+            *)
+                sleep 5
+                ;;
+        esac
+    done
+}
+
+
 # install vault.
 # see https://learn.hashicorp.com/vault/operations/production-hardening
 # see https://www.vaultproject.io/docs/internals/security.html
@@ -13,7 +40,7 @@ apt-get install -y software-properties-common apt-transport-https gnupg
 wget -qO- https://apt.releases.hashicorp.com/gpg \
     | gpg --dearmor >/etc/apt/keyrings/apt.releases.hashicorp.com.gpg
 echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/apt.releases.hashicorp.com.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" \
-    >/etc/apt/sources.list.d/apt.releases.hashicorp.com.list 
+    >/etc/apt/sources.list.d/apt.releases.hashicorp.com.list
 apt-get update
 vault_apt_version="$(apt-cache madison vault | perl -ne "/\s($vault_version(-.+?)?)\s/ && print \$1")"
 apt-get install -y "vault=${vault_apt_version}"
@@ -86,7 +113,7 @@ sed -i -E 's,^(\s*[^#].+\sswap.+),#\1,g' /etc/fstab
 # start vault.
 systemctl enable vault
 systemctl start vault
-sleep 3
+wait-for-state 501 # wait for the not-initialized state.
 journalctl -u vault
 
 # init vault.
@@ -117,17 +144,46 @@ popd
 cat >/opt/vault/auto-unseal/unseal <<EOF
 #!/bin/bash
 set -eu
-sleep 3 # to give vault some time to initialize before we hit its api.
+export VAULT_ADDR='$VAULT_ADDR'
+# wait for vault to be ready.
+# see https://developer.hashicorp.com/vault/api-docs/system/health
+VAULT_HEALTH_CHECK_URL="\$VAULT_ADDR/v1/sys/health"
+while true; do
+    status_code="\$(
+        (wget \
+            -qO- \
+            --server-response \
+            --spider \
+            --tries=1 \
+            "\$VAULT_HEALTH_CHECK_URL" \
+            2>&1 || true) \
+            | awk '/^  HTTP/{print \$2}')"
+    case "\$status_code" in
+        # vault is sealed. break the loop, and unseal it.
+        503)
+            break
+            ;;
+        # for some odd reason vault is already unsealed. anyways, its
+        # ready and unsealed, so exit this script.
+        200)
+            exit 0
+            ;;
+        # otherwise, wait a bit, then retry the health check.
+        *)
+            sleep 5
+            ;;
+    esac
+done
 KEYS=\$(cat /opt/vault/auto-unseal/unseal-keys.txt)
 for key in \$KEYS; do
-    /usr/bin/vault operator unseal -address=$VAULT_ADDR \$key
+    /usr/bin/vault operator unseal \$key
 done
 EOF
 /opt/vault/auto-unseal/unseal
 
 # restart vault to verify that the automatic unseal is working.
 systemctl restart vault
-sleep 3
+wait-for-state 200 # wait for the unsealed state.
 journalctl -u vault
 vault status
 
