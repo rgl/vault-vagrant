@@ -35,7 +35,7 @@ function wait-for-state {
 # see https://github.com/hashicorp/vault
 # NB execute `apt-cache madison vault` to known the available versions.
 # renovate: datasource=github-releases depName=hashicorp/vault
-vault_version='1.15.4'
+vault_version='1.15.5'
 apt-get install -y software-properties-common apt-transport-https gnupg
 wget -qO- https://apt.releases.hashicorp.com/gpg \
     | gpg --dearmor >/etc/apt/keyrings/apt.releases.hashicorp.com.gpg
