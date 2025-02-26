@@ -7,7 +7,7 @@ vault_password = 'abracadabra'
 vault_pg_greetings_reader_path = 'database/creds/greetings-reader'
 
 # login into vault.
-# see https://hvac.readthedocs.io/en/v2.1.0/usage/auth_methods/userpass.html
+# see https://hvac.readthedocs.io/en/v2.3.0/usage/auth_methods/userpass.html
 client = hvac.Client(url=vault_addr)
 vault_authentication = client.auth.userpass.login(vault_username, vault_password)
 print('vault policies for %s: %r' % (vault_username, vault_authentication['auth']['policies']))
