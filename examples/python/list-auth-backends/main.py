@@ -3,13 +3,8 @@ import json
 import os
 import textwrap
 
-if hasattr(textwrap, 'indent'): # Python 3+?
-    def indent(text, amount, ch=' '):
-        return textwrap.indent(text, amount * ch)
-else:
-    def indent(text, amount, ch=' '):
-        padding = amount * ch
-        return ''.join(padding+line for line in text.splitlines(True))
+def indent(text, amount, ch=' '):
+    return textwrap.indent(text, amount * ch)
 
 vault_addr = 'https://vault.example.com:8200'
 vault_token = open(os.path.expanduser('~/.vault-token')).read().strip()
